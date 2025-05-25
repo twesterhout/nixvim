@@ -292,15 +292,18 @@ in
           meta.mainProgram = "nvim";
         };
 
-        printInitPackage = pkgs.writeShellApplication {
-          name = "nixvim-print-init";
-          runtimeInputs = [ pkgs.bat ];
-          runtimeEnv = {
-            init = config.build.initSource;
-          };
-          text = ''
-            bat --language=lua "$init"
+        printInitPackage = pkgs.stdenv.mkDerivation {
+          pname = "nixvim-print-init";
+          version = "1.0";
+          dontUnpack = true;
+          dontConfigure = true;
+          dontBuild = true;
+          installPhase = ''
+            mkdir -p $out/bin
+            makeBinaryWrapper ${lib.getExe pkgs.bat} $out/bin/bat --inherit-argv0 --append-flag --language=lua --append-flag ${config.build.initSource}
           '';
+          buildInputs = [ pkgs.makeBinaryWrapper ];
+          meta.mainProgram = "bat";
         };
 
         manDocsPackage = config.flake.packages.${system}.man-docs;
